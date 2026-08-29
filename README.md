@@ -79,13 +79,16 @@ Example request:
 
 ### Output
 
-The API returns the predicted Iris flower species.
+The API returns the predicted Iris flower species along with the prediction confidence, model version, and a unique request ID.
 
 Example response:
 
 ```json
 {
-  "prediction": "setosa"
+  "prediction": "setosa",
+  "confidence": 0.48,
+  "model_version": "1.0",
+  "request_id": "unique-request-id"
 }
 ```
 
@@ -96,11 +99,13 @@ The planned API request flow is:
 ```text
 Client
   ↓
+Request Middleware (Request ID + Logging)
+  ↓
 POST /predict
   ↓
 Input Validation
   ↓
-Preprocessing
+Preprocessing Pipeline
   ↓
 Machine Learning Model
   ↓
@@ -137,8 +142,14 @@ iris-ml-api/
 │
 ├── app/
 │   ├── main.py
+│   ├── logging_config.py
 │   ├── models/
+│   │   └── schemas.py
 │   └── routers/
+│
+├── logs/
+│   └── app.log
+│
 │
 ├── ml/
 │   ├── train.py
@@ -184,19 +195,27 @@ iris-ml-api/
 - [x] `GET /` endpoint created
 - [x] `POST /predict` endpoint created
 - [x] FastAPI Swagger documentation tested
+- [x] Pydantic input validation added
+- [x] Real ML model integrated with FastAPI
+- [x] Model loaded using FastAPI lifespan
+- [x] Health check endpoint added
+- [x] Error handling implemented
+- [x] Custom exception handling added
+- [x] Structured logging configured
+- [x] Request middleware added
+- [x] Unique request IDs implemented
+- [x] Prediction success and failure logging added
+- [x] Rotating file logging implemented
 
 ## Future Development
 
 The project will be developed further by adding:
 
-- Pydantic input validation
-- Real ML model integration with FastAPI
-- Error handling
 - Automated testing
-- Structured logging
 - API monitoring and metrics
 - Docker containerization
 - Deployment
+- API versioning
 
 ## API Documentation
 

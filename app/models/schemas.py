@@ -1,8 +1,14 @@
 from pydantic import BaseModel, Field
 
 class PredictionInput(BaseModel):
-    sepal_length: float = Field(..., gt=0, description="sepal lenght must be postive")
-    sepal_width: float  = Field(..., gt=0, description="sepal widht must be postive")
-    petal_length: float = Field(..., gt=0, description ="petal_lenght must be postive")
-    petal_width: float  = Field(..., gt=0, le=10, description="petal_widht must be postive")
+    sepal_length: float = Field(..., gt=0, examples=[5.1], description="sepal length must be positive")
+    sepal_width: float  = Field(..., gt=0, examples=[3.5], description="sepal width must be positive")
+    petal_length: float = Field(..., gt=0, examples=[1.4], description ="petal length must be positive")
+    petal_width: float  = Field(..., gt=0, le=10, examples=[0.2], description="petal width must be positive")
 
+
+class PredictionOutput(BaseModel):
+    prediction:    str
+    confidence:    float
+    model_version: str
+    request_id:    str
