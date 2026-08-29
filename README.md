@@ -86,7 +86,7 @@ Example response:
 ```json
 {
   "prediction": "setosa",
-  "confidence": 0.48,
+  "confidence": 48,
   "model_version": "1.0",
   "request_id": "unique-request-id"
 }
