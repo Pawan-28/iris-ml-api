@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class PredictionInput(BaseModel):
     sepal_length: float = Field(..., gt=0, examples=[5.1], description="sepal length must be positive")
@@ -12,3 +13,10 @@ class PredictionOutput(BaseModel):
     confidence:    float
     model_version: str
     request_id:    str
+
+
+class PredictionBatchInput(BaseModel):
+    items: List[PredictionInput] = Field(..., min_length=1)
+
+class PredictionBatchOutput(BaseModel):
+    items: List[PredictionOutput]    

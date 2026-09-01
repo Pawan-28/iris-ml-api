@@ -60,3 +60,41 @@
 2026-08-29 11:16:50,364 | INFO | ML model loaded successfully
 2026-08-29 11:17:32,427 | INFO | Prediction successful | request_id=0f98b734-5a2c-46f6-b694-7153b6771d78 | prediction=setosa
 2026-08-29 11:17:32,429 | INFO | request_id=0f98b734-5a2c-46f6-b694-7153b6771d78 |method=POST |path=/predict |duration=0.0273s
+2026-08-31 11:44:33,802 | INFO | ML model loaded successfully
+2026-08-31 11:46:03,537 | INFO | ML model loaded successfully
+2026-08-31 11:47:03,651 | INFO | request_id=dd404dcd-7e3e-4603-bff8-b38087e6f6ff |method=GET |path=/api/v1/health |duration=0.0028s
+2026-08-31 11:47:03,692 | INFO | request_id=11894c1c-4d7a-4516-83cf-f9be22415963 |method=GET |path=/favicon.ico |duration=0.0005s
+2026-08-31 14:20:40,532 | INFO | ML model loaded successfully
+2026-08-31 14:20:58,156 | INFO | request_id=1a272614-aa70-429e-8c9e-0da5b9feaff1 |method=GET |path=/docs |duration=0.0005s
+2026-08-31 14:20:58,430 | INFO | request_id=18d7f54b-9dd4-447b-ba6d-91762c016af4 |method=GET |path=/openapi.json |duration=0.0174s
+2026-08-31 14:21:15,999 | INFO | request_id=4925e9a4-8413-4bda-b125-836284c24e79 |method=GET |path=/api/v1/health |duration=0.0033s
+2026-08-31 14:21:55,254 | ERROR | Prediction Failed | request_id=13752579-eb1c-476e-827d-fe6df951fe99 | error='function' object has no attribute 'proba'
+2026-08-31 14:21:55,255 | INFO | request_id=13752579-eb1c-476e-827d-fe6df951fe99 |method=POST |path=/api/v1/predict |duration=0.0194s
+2026-08-31 14:22:50,101 | INFO | ML model loaded successfully
+2026-08-31 14:22:58,152 | INFO | ML model loaded successfully
+2026-08-31 14:23:01,336 | ERROR | Prediction Failed | request_id=1723a889-57e3-4f36-8159-0b8ee0a72581 | error='function' object has no attribute 'proba'
+2026-08-31 14:23:01,337 | INFO | request_id=1723a889-57e3-4f36-8159-0b8ee0a72581 |method=POST |path=/api/v1/predict |duration=0.0205s
+2026-08-31 14:23:44,255 | INFO | ML model loaded successfully
+2026-08-31 14:23:44,309 | INFO | Prediction successful | request_id=4111762c-8139-40bd-b1ec-f4b94b2ad348 | prediction=setosa
+2026-08-31 14:23:44,310 | INFO | request_id=4111762c-8139-40bd-b1ec-f4b94b2ad348 |method=POST |path=/api/v1/predict |duration=0.0266s
+2026-08-31 14:26:04,828 | INFO | ML model loaded successfully
+2026-08-31 14:26:17,726 | INFO | Prediction successful | request_id=b3df17a1-7a7b-4a2b-b6a9-1d4de3922ed7 | prediction=setosa
+2026-08-31 14:26:17,728 | INFO | request_id=b3df17a1-7a7b-4a2b-b6a9-1d4de3922ed7 |method=POST |path=/api/v1/predict |duration=0.0288s
+2026-08-31 14:31:25,565 | INFO | ML model loaded successfully
+2026-09-01 16:54:28,067 | INFO | ML model loaded successfully
+2026-09-01 16:54:28,200 | INFO | request_id=274e95ea-bad7-46c9-8874-fed097768f59 |method=GET |path=/docs |duration=0.0007s
+2026-09-01 16:54:28,415 | INFO | request_id=277fdf26-b194-41fc-b574-a95e8d7cb584 |method=GET |path=/openapi.json |duration=0.0223s
+2026-09-01 16:55:44,867 | INFO | Batch prediction successful | request_id=b8f41b2a-3e39-4a83-8f24-c45401d4959c | batch_size=3
+2026-09-01 16:55:44,869 | INFO | request_id=b8f41b2a-3e39-4a83-8f24-c45401d4959c |method=POST |path=/api/v1/predict-batch |duration=0.0326s
+2026-09-01 16:56:55,636 | INFO | request_id=3f3dafa6-06ce-4abd-ac58-3c58a45fdeab |method=GET |path=/api/v1/model-info |duration=0.0010s
+2026-09-01 16:57:09,470 | INFO | request_id=9155c539-c3f7-4634-a04d-458f3d0afa4e |method=GET |path=/api/v1/model-info |duration=0.0007s
+2026-09-01 18:04:55,720 | INFO | ML model loaded successfully
+2026-09-01 18:05:02,289 | INFO | request_id=14b59694-d8d5-4e58-aa83-3298cad1ee39 |method=GET |path=/api/v1/model-info |duration=0.0054s
+2026-09-01 18:05:38,345 | INFO | Prediction successful | request_id=b8d93f65-eb5b-482a-bf3a-fea6251cedc5 | prediction=setosa
+2026-09-01 18:05:38,346 | INFO | request_id=b8d93f65-eb5b-482a-bf3a-fea6251cedc5 |method=POST |path=/api/v1/predict |duration=0.0267s
+2026-09-01 18:06:42,742 | INFO | Batch prediction successful | request_id=e1f726ff-fcdc-4e56-97e6-c9dfc89c7215 | batch_size=3
+2026-09-01 18:06:42,743 | INFO | request_id=e1f726ff-fcdc-4e56-97e6-c9dfc89c7215 |method=POST |path=/api/v1/predict-batch |duration=0.0194s
+2026-09-01 18:07:38,629 | INFO | request_id=cc6d0139-bbc9-4e65-9f14-3e03385e6a3d |method=GET |path=/api/v1/model-info |duration=0.0010s
+2026-09-01 18:09:19,729 | INFO | ML model loaded successfully
+2026-09-01 18:09:34,194 | INFO | Batch prediction successful | request_id=8439e4c1-3b42-41c3-94b3-c89a2298f7cc | batch_size=3
+2026-09-01 18:09:34,195 | INFO | request_id=8439e4c1-3b42-41c3-94b3-c89a2298f7cc |method=POST |path=/api/v1/predict-batch |duration=0.0307s
