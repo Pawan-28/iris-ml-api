@@ -73,12 +73,14 @@ def predict(data: PredictionInput, request: Request):
 
 @router.post("/predict-batch", response_model=PredictionBatchOutput)
 def predict_batch(data:PredictionBatchInput, request: Request):
-    try:
-        if len(data.items) > settings.MAX_BATCH_SIZE:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Batch size can't exceed {settings.MAX_BATCH_SIZE}"
-            )
+    
+    if len(data.items) > settings.MAX_BATCH_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Batch size can't exceed {settings.MAX_BATCH_SIZE}"
+        )
+
+    try:    
         features = [
             [
                 item.sepal_length,
