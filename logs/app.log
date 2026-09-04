@@ -184,3 +184,28 @@
 2026-09-02 14:41:46,605 | INFO | request_id=e50d6d33-8f60-41b4-93aa-5f4c7e137d46 |method=POST |path=/api/v1/predict |duration=0.0009s
 2026-09-02 14:41:46,634 | INFO | ML model loaded successfully
 2026-09-02 14:41:46,637 | INFO | request_id=91ce2876-ec13-401f-908a-e29bcc31e7cc |method=POST |path=/api/v1/predict |duration=0.0008s
+2026-09-02 14:46:24,122 | INFO | ML model loaded successfully
+2026-09-02 14:46:36,236 | INFO | request_id=cd80d137-5c6d-41fb-92c5-eb408fba230f |method=GET |path=/docs |duration=0.0004s
+2026-09-02 14:46:36,409 | INFO | request_id=ace8963a-6ffb-49d1-b2c8-9caaf898281d |method=GET |path=/openapi.json |duration=0.0162s
+2026-09-02 14:46:45,337 | INFO | V2 prediction successful | request_id=fb2f55e1-7b3e-4fa1-ac14-5b3a449c2f3d | prediction=setosa
+2026-09-02 14:46:45,342 | INFO | request_id=fb2f55e1-7b3e-4fa1-ac14-5b3a449c2f3d |method=POST |path=/api/v2/predict |duration=0.0260s
+2026-09-02 14:47:28,413 | INFO | ML model loaded successfully
+2026-09-02 14:47:34,906 | INFO | ML model loaded successfully
+2026-09-02 14:47:45,871 | INFO | ML model loaded successfully
+2026-09-02 14:47:45,878 | INFO | request_id=ad312f14-8d7f-4e0b-8586-302837898e95 |method=POST |path=/api/v1/predict-batch |duration=0.0038s
+2026-09-02 14:47:45,903 | INFO | ML model loaded successfully
+2026-09-02 14:47:45,906 | INFO | request_id=8345280a-aea5-4047-b219-ce276927a572 |method=GET |path=/api/v1/model-info |duration=0.0016s
+2026-09-02 14:47:45,930 | INFO | ML model loaded successfully
+2026-09-02 14:47:45,933 | INFO | request_id=a1057255-b0ae-4426-8aa3-e35bf173ec0c |method=GET |path=/api/v1/health |duration=0.0012s
+2026-09-02 14:47:45,958 | INFO | ML model loaded successfully
+2026-09-02 14:47:45,976 | INFO | Prediction successful | request_id=6a4e0465-2429-4a90-a56c-38bdb8fddc4c | prediction=setosa
+2026-09-02 14:47:45,977 | INFO | request_id=6a4e0465-2429-4a90-a56c-38bdb8fddc4c |method=POST |path=/api/v1/predict |duration=0.0178s
+2026-09-02 14:47:46,002 | INFO | ML model loaded successfully
+2026-09-02 14:47:46,005 | INFO | request_id=3d3ec60f-20f5-4820-85aa-5b9e24c39756 |method=POST |path=/api/v1/predict |duration=0.0007s
+2026-09-02 14:47:46,029 | INFO | ML model loaded successfully
+2026-09-02 14:47:46,031 | INFO | request_id=4f17be9a-7c37-4ffb-b0fb-517424062e69 |method=POST |path=/api/v1/predict |duration=0.0006s
+2026-09-02 14:47:46,058 | INFO | ML model loaded successfully
+2026-09-02 14:47:46,071 | INFO | Prediction successful | request_id=05f4ccec-eb95-412c-b399-12b37397293c | prediction=setosa
+2026-09-02 14:47:46,072 | INFO | request_id=05f4ccec-eb95-412c-b399-12b37397293c |method=POST |path=/api/v1/predict |duration=0.0119s
+2026-09-02 14:47:46,084 | INFO | V2 prediction successful | request_id=4798ad54-2d31-4a49-9952-44df7a5b4dd2 | prediction=setosa
+2026-09-02 14:47:46,085 | INFO | request_id=4798ad54-2d31-4a49-9952-44df7a5b4dd2 |method=POST |path=/api/v2/predict |duration=0.0127s

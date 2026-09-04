@@ -51,20 +51,27 @@ The exact accuracy may vary depending on the train/test split and model configur
 
 ## API Contract
 
-### Endpoint
+### V1 Endpoint
 
 ```text
-POST /predict
+POST /api/v1/predict
+```
+
+### V2 Endpoint
+
+```text
+POST /api/v2/predict
 ```
 
 ### Input
 
-The `/predict` endpoint accepts four numerical features representing the physical measurements of an Iris flower:
+The `/api/v1/predict` and `/api/v2/predict` endpoints accept four numerical features representing the physical measurements of an Iris flower:
 
 - `sepal_length`
 - `sepal_width`
 - `petal_length`
 - `petal_width`
+
 
 Example request:
 
@@ -86,11 +93,31 @@ Example response:
 ```json
 {
   "prediction": "setosa",
-  "confidence": 48,
+  "confidence": 100.0,
   "model_version": "1.0",
   "request_id": "unique-request-id"
 }
 ```
+
+### V2 Output
+
+The V2 API returns the predicted species along with the full probability distribution for all Iris classes, model version, and request ID.
+
+Example response:
+
+```json
+{
+  "prediction": "setosa",
+  "probabilities": {
+    "setosa": 1.0,
+    "versicolor": 0.0,
+    "virginica": 0.0
+  },
+  "model_version": "1.0",
+  "request_id": "unique-request-id"
+}
+```
+
 
 ## Request Flow
 
@@ -101,7 +128,9 @@ Client
   ↓
 Request Middleware (Request ID + Logging)
   ↓
-POST /predict
+POST /api/v1/predict
+or
+POST /api/v2/predict
   ↓
 Input Validation
   ↓
@@ -116,7 +145,7 @@ JSON Response
 
 ### Flow Explanation
 
-1. The client sends Iris flower measurements to the `/predict` endpoint.
+1. The client sends Iris flower measurements to the `/api/v1/predict` or `/api/v2/predict` endpoint.
 2. The API validates the input data.
 3. The same preprocessing used during model training is applied.
 4. The processed data is passed to the trained machine learning model.
@@ -142,10 +171,13 @@ iris-ml-api/
 │
 ├── app/
 │   ├── main.py
+│   ├── config.py
 │   ├── logging_config.py
 │   ├── models/
 │   │   └── schemas.py
 │   └── routers/
+│       ├── v1.py
+│       └── v2.py
 │
 ├── logs/
 │   └── app.log
@@ -158,7 +190,13 @@ iris-ml-api/
 │       └── model.joblib
 │
 ├── tests/
+│   ├── conftest.py
+│   ├── test_health.py
+│   ├── test_predict.py
+│   ├── test_batch.py
+│   └── test_v2.py
 │
+├── .env.example
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -193,7 +231,7 @@ iris-ml-api/
 - [x] Saved model loaded and tested with a prediction
 - [x] Basic FastAPI application created
 - [x] `GET /` endpoint created
-- [x] `POST /predict` endpoint created
+- [x] `POST /api/v1/predict` endpoint created
 - [x] FastAPI Swagger documentation tested
 - [x] Pydantic input validation added
 - [x] Real ML model integrated with FastAPI
@@ -206,21 +244,55 @@ iris-ml-api/
 - [x] Unique request IDs implemented
 - [x] Prediction success and failure logging added
 - [x] Rotating file logging implemented
+- [x] API versioning implemented with `/api/v1` and `/api/v2`
+- [x] Batch prediction endpoint added
+- [x] Model information endpoint added
+- [x] Environment-based configuration added
+- [x] `.env` and `.env.example` added
+- [x] Automated API tests added with pytest
+- [x] Input validation and edge-case tests added
+- [x] API v2 endpoint added
+- [x] V1 and V2 response shapes tested
+- [x] 7 automated tests passing
 
 ## Future Development
 
 The project will be developed further by adding:
 
-- Automated testing
 - API monitoring and metrics
 - Docker containerization
 - Deployment
-- API versioning
+- Further API version improvements
+
+
+## Task 14 — API Versioning and Self-Assessment
+
+### API Versioning
+
+The API now supports multiple versions:
+
+- `POST /api/v1/predict` — returns prediction, confidence, model version, and request ID.
+- `POST /api/v2/predict` — returns prediction, full probability distribution, model version, and request ID.
+
+Version 2 introduces a deliberately different response shape while keeping version 1 unchanged.
+
+### Self-Assessment
+
+#### 1. If a client was depending on v1's exact response shape, would anything break?
+
+No. The v1 response shape remains unchanged. The breaking change was introduced through a separate `/api/v2/predict` endpoint. Automated tests verify that both versions work with the same input while returning different response shapes.
+
+#### 2. Where did you have to duplicate code between v1 and v2, and could any of it be shared instead?
+
+Some feature preparation, model prediction, and class mapping logic is duplicated between v1 and v2. In the future, the common prediction logic could be moved into a shared service or helper function, while keeping separate response schemas for each API version.
+
+#### 3. How would you tell your team it's time to deprecate v1 someday?
+
+I would consider deprecating v1 when most clients have migrated to v2, v1 traffic has consistently become very low, and existing v1 users have been informed and given a clear migration path.
+
 
 ## API Documentation
 
 FastAPI provides automatic interactive API documentation at:
 
-```text
-http://127.0.0.1:8000/docs
-```
+[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)

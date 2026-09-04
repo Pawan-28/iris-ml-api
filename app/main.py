@@ -6,6 +6,7 @@ from app.config import settings
 from app.logging_config import logger
 import uuid, time
 from app.routers.v1 import router
+from app.routers.v2 import router as v2_router
 
 
 
@@ -19,6 +20,8 @@ app = FastAPI(
     title=settings.API_TITLE,
     lifespan=lifespan)
 app.include_router(router)
+
+app.include_router(v2_router)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
