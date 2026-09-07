@@ -196,9 +196,13 @@ iris-ml-api/
 │   ├── test_batch.py
 │   └── test_v2.py
 │
+├── .dockerignore
+├── .env
 ├── .env.example
-├── requirements.txt
 ├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
 └── README.md
 ```
 
@@ -213,6 +217,8 @@ iris-ml-api/
 - Joblib
 - Git
 - GitHub
+- Docker
+- Docker Compose
 
 ## Current Progress
 
@@ -255,12 +261,58 @@ iris-ml-api/
 - [x] V1 and V2 response shapes tested
 - [x] 7 automated tests passing
 
+
+## Docker
+
+The API is containerized using Docker, allowing the complete application,
+including its dependencies and trained machine learning model, to run inside
+a portable container.
+
+### Dockerfile
+
+The Dockerfile:
+
+- Uses Python 3.12 Slim as the base image
+- Sets `/app` as the working directory
+- Installs all project dependencies from `requirements.txt`
+- Copies the application code and ML model into the container
+- Exposes port `8000`
+- Runs the FastAPI application using Uvicorn
+
+The API uses `0.0.0.0` inside Docker so that the application is accessible
+from outside the container through the mapped host port.
+
+### Why `0.0.0.0` is used inside Docker
+
+Inside a Docker container, `127.0.0.1` only makes the application accessible
+from within the container itself.
+
+Using `0.0.0.0` makes Uvicorn listen on all available network interfaces,
+allowing Docker port mapping to expose the API to the host machine.
+
+### Build the Docker Image
+
+```bash
+docker build -t ml-api:v1 .
+```
+
+### Run the Docker Container
+
+```bash
+docker run -p 8000:8000 ml-api:v1
+```
+
+### Run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
 ## Future Development
 
 The project will be developed further by adding:
 
 - API monitoring and metrics
-- Docker containerization
 - Deployment
 - Further API version improvements
 

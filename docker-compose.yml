@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    container_name: iris-ml-api
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    volumes:
+      - ./ml/saved_model:/app/ml/saved_model
