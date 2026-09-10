@@ -1,4 +1,4 @@
-def test_v1_and_v2_have_different_response_shapes(client):
+def test_v1_and_v2_have_different_response_shapes(client, auth_headers):
     payload = {
         "sepal_length": 5.1,
         "sepal_width": 3.5,
@@ -8,12 +8,14 @@ def test_v1_and_v2_have_different_response_shapes(client):
 
     v1_response = client.post(
         "/api/v1/predict",
-        json=payload
+        json=payload,
+        headers=auth_headers
     )
 
     v2_response = client.post(
         "/api/v2/predict",
-        json=payload
+        json=payload,
+        headers=auth_headers
     )
 
     assert v1_response.status_code == 200

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Security
+from app.security import verify_api_key
+
 from app.models.schemas import (
     PredictionInput,
     PredictionOutput,
@@ -8,24 +10,31 @@ from app.models.schemas import (
 from app.config import settings
 from app.logging_config import logger
 
+
+
+
 router = APIRouter(
     prefix="/api/v1",
     tags=["api v1"]
-
 )
 
 
 @router.get("/health")
 def health():
-    return{
+    return {
         "status": "ok",
         "model_loaded": True
     }
 
-@router.post("/predict", response_model=PredictionOutput)
+
+@router.post(
+    "/predict",
+    response_model=PredictionOutput,
+    dependencies=[Security(verify_api_key)]
+)
 def predict(data: PredictionInput, request: Request):
     try:
-        features =[[
+        features = [[
             data.sepal_length,
             data.sepal_width,
             data.petal_length,
@@ -43,11 +52,11 @@ def predict(data: PredictionInput, request: Request):
         confidence = round(float(max(probabilities[0])) * 100, 2)
 
         request_id = request.state.request_id
+
         logger.info(
             f"Prediction successful | "
             f"request_id={request_id} | "
             f"prediction={predicted_class}"
-
         )
 
         return {
@@ -56,6 +65,9 @@ def predict(data: PredictionInput, request: Request):
             "model_version": settings.MODEL_VERSION,
             "request_id": request_id
         }
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         logger.error(
@@ -67,20 +79,23 @@ def predict(data: PredictionInput, request: Request):
         raise HTTPException(
             status_code=500,
             detail="Prediction Failed"
-        )    
+        )
 
 
+@router.post(
+    "/predict-batch",
+    response_model=PredictionBatchOutput,
+    dependencies=[Security(verify_api_key)]
+)
+def predict_batch(data: PredictionBatchInput, request: Request):
 
-@router.post("/predict-batch", response_model=PredictionBatchOutput)
-def predict_batch(data:PredictionBatchInput, request: Request):
-    
     if len(data.items) > settings.MAX_BATCH_SIZE:
         raise HTTPException(
             status_code=400,
             detail=f"Batch size can't exceed {settings.MAX_BATCH_SIZE}"
         )
 
-    try:    
+    try:
         features = [
             [
                 item.sepal_length,
@@ -101,8 +116,13 @@ def predict_batch(data:PredictionBatchInput, request: Request):
         results = []
 
         for prediction, probability in zip(predictions, probabilities):
+
             predicted_class = class_names[prediction]
-            confidence = round(float(max(probability))* 100, 2)
+
+            confidence = round(
+                float(max(probability)) * 100,
+                2
+            )
 
             results.append(
                 PredictionOutput(
@@ -110,7 +130,6 @@ def predict_batch(data:PredictionBatchInput, request: Request):
                     confidence=confidence,
                     model_version=settings.MODEL_VERSION,
                     request_id=request.state.request_id
-
                 )
             )
 
@@ -122,7 +141,11 @@ def predict_batch(data:PredictionBatchInput, request: Request):
 
         return {
             "items": results
-        }    
+        }
+
+    except HTTPException:
+        raise
+
     except Exception as e:
         logger.error(
             f"Batch prediction failed | "
@@ -132,12 +155,17 @@ def predict_batch(data:PredictionBatchInput, request: Request):
         )
 
         raise HTTPException(
-            status_code = 500,
+            status_code=500,
             detail="Batch prediction failed"
         )
-@router.get("/model-info")
+
+
+@router.get(
+    "/model-info",
+    dependencies=[Security(verify_api_key)]
+)
 def model_info():
-    return{
+    return {
         "model_type": "RandomForestClassifier",
         "model_version": settings.MODEL_VERSION,
         "training_date": "2026-08-26",
@@ -148,6 +176,8 @@ def model_info():
             "petal_width"
         ]
     }
+
+
 # V2 will introduce a breaking change while keeping V1 unchanged.
 # For example, V2 may return the full probability distribution
-# for all Iris classes instead of only the confidence score.    
+# for all Iris classes instead of only the confidence score.

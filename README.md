@@ -118,6 +118,32 @@ Example response:
 }
 ```
 
+## API Security
+
+The prediction and model information endpoints are protected using API key authentication.
+
+The API key must be sent using the following HTTP header:
+
+X-API-Key
+
+Example:
+
+X-API-Key: your-secret-api-key
+
+Protected endpoints:
+
+- POST /api/v1/predict
+- POST /api/v1/predict-batch
+- GET /api/v1/model-info
+- POST /api/v2/predict
+
+Requests with a missing or invalid API key return:
+
+```json
+{
+  "detail": "Invalid or missing API key"
+}
+
 
 ## Request Flow
 
@@ -173,6 +199,7 @@ iris-ml-api/
 │   ├── main.py
 │   ├── config.py
 │   ├── logging_config.py
+│   ├── security.py
 │   ├── models/
 │   │   └── schemas.py
 │   └── routers/
@@ -194,7 +221,8 @@ iris-ml-api/
 │   ├── test_health.py
 │   ├── test_predict.py
 │   ├── test_batch.py
-│   └── test_v2.py
+│   ├── test_v2.py
+│   └── test_security.py
 │
 ├── .dockerignore
 ├── .env
@@ -259,7 +287,13 @@ iris-ml-api/
 - [x] Input validation and edge-case tests added
 - [x] API v2 endpoint added
 - [x] V1 and V2 response shapes tested
-- [x] 7 automated tests passing
+- [x] API key authentication implemented
+- [x] Protected prediction endpoints with X-API-Key
+- [x] Missing API key validation implemented
+- [x] Invalid API key validation implemented
+- [x] Unexpected request fields rejected
+- [x] Security tests added with pytest
+- [x] 10 automated tests passing
 
 
 ## Docker
@@ -342,9 +376,24 @@ Some feature preparation, model prediction, and class mapping logic is duplicate
 
 I would consider deprecating v1 when most clients have migrated to v2, v1 traffic has consistently become very low, and existing v1 users have been informed and given a clear migration path.
 
+## Environment Configuration
+
+Sensitive configuration is stored using environment variables.
+
+Example `.env` configuration:
+
+```env
+MODEL_PATH=ml/saved_model/model.joblib
+MODEL_VERSION=1.0
+LOG_LEVEL=INFO
+MAX_BATCH_SIZE=100
+API_TITLE=Iris Flower Classification API
+API_KEY=your-secret-api-key
+ALLOWED_ORIGINS=http://localhost:3000
+```
 
 ## API Documentation
 
 FastAPI provides automatic interactive API documentation at:
 
-[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+[Open API Documentation](http://127.0.0.1:8000/docs)

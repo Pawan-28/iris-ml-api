@@ -1,4 +1,4 @@
-def test_predict_valid_input(client):
+def test_predict_valid_input(client, auth_headers):
     payload = {
         "sepal_length": 5.1,
         "sepal_width": 3.5,
@@ -6,7 +6,11 @@ def test_predict_valid_input(client):
         "petal_width": 0.2
     }
 
-    response = client.post("/api/v1/predict", json=payload)
+    response = client.post(
+        "/api/v1/predict",
+        json=payload,
+        headers=auth_headers
+    )
 
     assert response.status_code == 200
 
@@ -20,8 +24,7 @@ def test_predict_valid_input(client):
     assert data["prediction"] in ["setosa", "versicolor", "virginica"]
 
 
-
-def test_predict_invalid_input(client):
+def test_predict_invalid_input(client, auth_headers):
     payload = {
         "sepal_length": -5.1,
         "sepal_width": 3.5,
@@ -29,19 +32,26 @@ def test_predict_invalid_input(client):
         "petal_width": 0.2
     }
 
-    response = client.post("/api/v1/predict", json=payload)
+    response = client.post(
+        "/api/v1/predict",
+        json=payload,
+        headers=auth_headers
+    )
 
     assert response.status_code == 422
 
 
-
-def test_predict_missing_field(client):
+def test_predict_missing_field(client, auth_headers):
     payload = {
         "sepal_length": 5.1,
         "sepal_width": 3.5,
         "petal_length": 1.4
     }
 
-    response = client.post("/api/v1/predict", json=payload)
+    response = client.post(
+        "/api/v1/predict",
+        json=payload,
+        headers=auth_headers
+    )
 
     assert response.status_code == 422

@@ -1,4 +1,4 @@
-def test_predict_batch_oversized(client):
+def test_predict_batch_oversized(client, auth_headers):
     items = []
 
     for _ in range(101):
@@ -11,15 +11,18 @@ def test_predict_batch_oversized(client):
 
     response = client.post(
         "/api/v1/predict-batch",
-        json={"items": items}
+        json={"items": items},
+        headers=auth_headers
     )
 
     assert response.status_code == 400
 
 
-
-def test_model_info(client):
-    response = client.get("/api/v1/model-info")
+def test_model_info(client, auth_headers):
+    response = client.get(
+        "/api/v1/model-info",
+        headers=auth_headers
+    )
 
     assert response.status_code == 200
 

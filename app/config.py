@@ -8,6 +8,12 @@ class Settings(BaseSettings):
     MAX_BATCH_SIZE: int = 100
     API_TITLE: str = "Iris Flower Classification API"
 
+    # Security
+    API_KEY: str
+
+    # CORS
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8"

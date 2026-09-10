@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 
 from app.models.schemas import PredictionInput, PredictionV2Output
 from app.config import settings
 from app.logging_config import logger
+from app.security import verify_api_key
+from app.security import verify_api_key
 
 
 router = APIRouter(
@@ -12,7 +14,11 @@ router = APIRouter(
 
 
 @router.post("/predict", response_model=PredictionV2Output)
-def predict_v2(data: PredictionInput, request: Request):
+def predict_v2(
+    data: PredictionInput,
+    request: Request,
+    api_key: str = Depends(verify_api_key)
+):
     try:
         features = [[
             data.sepal_length,
@@ -52,6 +58,9 @@ def predict_v2(data: PredictionInput, request: Request):
             "model_version": settings.MODEL_VERSION,
             "request_id": request_id
         }
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         logger.error(
