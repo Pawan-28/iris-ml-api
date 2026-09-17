@@ -905,7 +905,11 @@ The Dockerized API is intended to be deployed to a cloud hosting platform that s
 ### Public API URL
 
 ```text
-TO_BE_UPDATED_AFTER_DEPLOYMENT
+Public API URL:
+https://iris-ml-api-xtnf.onrender.com
+
+Swagger Documentation:
+https://iris-ml-api-xtnf.onrender.com/docs
 ```
 
 ### Swagger Documentation
