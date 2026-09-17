@@ -4,9 +4,18 @@
 
 This project is a machine learning REST API that predicts the species of an Iris flower based on its physical measurements.
 
-The API will accept four input features: sepal length, sepal width, petal length, and petal width. A machine learning classification model will process these inputs and return the predicted Iris flower species.
+The API accepts four input features:
+
+- Sepal length
+- Sepal width
+- Petal length
+- Petal width
+
+A trained machine learning classification model processes these inputs and returns the predicted Iris flower species.
 
 The main goal of this project is to understand how a trained machine learning model can be served through a REST API and gradually developed into a production-ready service.
+
+---
 
 ## Problem Statement
 
@@ -16,7 +25,9 @@ The problem is to classify an Iris flower into one of three species based on its
 - Versicolor
 - Virginica
 
-This is a classification problem.
+This is a supervised machine learning classification problem.
+
+---
 
 ## Dataset
 
@@ -31,13 +42,25 @@ The dataset contains four input features:
 
 The target variable represents the Iris flower species.
 
+---
+
 ## Machine Learning Model
 
 The project uses a `RandomForestClassifier` from scikit-learn.
 
 The model is trained using the Iris dataset and evaluated using a test dataset.
 
-The trained model is saved using `joblib` so that it can be loaded later by the FastAPI application without retraining.
+The training process uses:
+
+- Train/test split
+- Stratified sampling
+- StandardScaler
+- RandomForestClassifier
+- Accuracy evaluation
+
+The trained model and preprocessing pipeline are saved using `joblib`.
+
+The saved model can then be loaded by the FastAPI application without retraining.
 
 ### Model Performance
 
@@ -49,6 +72,8 @@ Test Accuracy: 90%
 
 The exact accuracy may vary depending on the train/test split and model configuration.
 
+---
+
 ## API Contract
 
 ### V1 Endpoint
@@ -57,23 +82,31 @@ The exact accuracy may vary depending on the train/test split and model configur
 POST /api/v1/predict
 ```
 
+The V1 endpoint returns:
+
+- Prediction
+- Confidence
+- Model version
+- Request ID
+
 ### V2 Endpoint
 
 ```text
 POST /api/v2/predict
 ```
 
-### Input
+The V2 endpoint returns:
 
-The `/api/v1/predict` and `/api/v2/predict` endpoints accept four numerical features representing the physical measurements of an Iris flower:
+- Prediction
+- Full probability distribution
+- Model version
+- Request ID
 
-- `sepal_length`
-- `sepal_width`
-- `petal_length`
-- `petal_width`
+---
 
+## Input
 
-Example request:
+The `/api/v1/predict` and `/api/v2/predict` endpoints accept four numerical features representing the physical measurements of an Iris flower.
 
 ```json
 {
@@ -84,9 +117,268 @@ Example request:
 }
 ```
 
-### Output
+Input validation is implemented using Pydantic.
 
-The API returns the predicted Iris flower species along with the prediction confidence, model version, and a unique request ID.
+Invalid values such as negative measurements, missing fields, or unexpected fields are rejected by the API.
+
+---
+
+## V1 Output
+
+Example:
+
+```json
+{
+  "prediction": "setosa",
+  "confidence": 100.0,
+  "model_version": "1.0",
+  "request_id": "unique-request-id"
+}
+```
+
+---
+
+## V2 Output
+
+Version 2 provides the complete probability distribution for all Iris classes.
+
+Example:
+
+```json
+{
+  "prediction": "setosa",
+  "probabilities": {
+    "setosa": 1.0,
+    "versicolor": 0.0,
+    "virginica": 0.0
+  },
+  "model_version": "1.0",
+  "request_id": "unique-request-id"
+}
+```
+
+Version 2 intentionally uses a different response structure while keeping V1 unchanged.
+
+---
+
+## API Security
+
+Prediction and model information endpoints are protected using API key authentication.
+
+The API key must be provided using the following HTTP header:
+
+```text
+X-API-Key: your-secret-api-key
+```
+
+### Protected Endpoints
+
+- `POST /api/v1/predict`
+- `POST /api/v1/predict-batch`
+- `GET /api/v1/model-info`
+- `POST /api/v2/predict`
+
+Requests with a missing or invalid API key return:
+
+```json
+{
+  "detail": "Invalid or missing API key"
+}
+```
+
+The API key is stored using environment variables and is not hardcoded into the application.
+
+---
+
+## Request Flow
+
+The API request flow is:
+
+```text
+Client
+  |
+  v
+Request Middleware
+(Request ID + Logging)
+  |
+  v
+API Router
+  |
+  +--------------------+
+  |                    |
+  v                    v
+V1 Endpoint          V2 Endpoint
+  |                    |
+  +---------+----------+
+            |
+            v
+     Pydantic Validation
+            |
+            v
+   Feature Preparation
+            |
+            v
+   Saved ML Pipeline
+            |
+            v
+       Prediction
+            |
+            v
+     JSON Response
+```
+
+### Flow Explanation
+
+1. The client sends Iris flower measurements to the API.
+2. Request middleware generates a unique request ID and records request information.
+3. Pydantic validates the input data.
+4. The application prepares the four model features.
+5. The saved machine learning pipeline processes the input.
+6. The model predicts the Iris flower species.
+7. Prometheus prediction metrics are updated.
+8. The API returns the prediction as a JSON response.
+
+---
+
+## Model Saving
+
+The trained model is saved at:
+
+```text
+ml/saved_model/model.joblib
+```
+
+The saved model contains the trained machine learning pipeline.
+
+A separate prediction script is available at:
+
+```text
+ml/predict.py
+```
+
+This script verifies that the saved model can be loaded and used for prediction without retraining.
+
+---
+
+## Project Structure
+
+```text
+iris-ml-api/
+│
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   ├── logging_config.py
+│   ├── metrics.py
+│   ├── security.py
+│   │
+│   ├── models/
+│   │   └── schemas.py
+│   │
+│   └── routers/
+│       ├── v1.py
+│       └── v2.py
+│
+├── tests/
+│   ├── conftest.py
+│   ├── test_health.py
+│   ├── test_predict.py
+│   ├── test_batch.py
+│   ├── test_metrics.py
+│   ├── test_v2.py
+│   └── test_security.py
+│
+├── logs/
+│   └── app.log
+│
+├── ml/
+│   ├── train.py
+│   ├── predict.py
+│   └── saved_model/
+│       └── model.joblib
+│
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── README.md
+└── TESTING.md
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Authentication | Description |
+|---|---|---|---|
+| GET | `/` | No | API status |
+| GET | `/api/v1/health` | No | Health check |
+| POST | `/api/v1/predict` | X-API-Key | Single prediction |
+| POST | `/api/v1/predict-batch` | X-API-Key | Batch prediction |
+| GET | `/api/v1/model-info` | X-API-Key | Model information |
+| POST | `/api/v2/predict` | X-API-Key | Prediction with probability distribution |
+| GET | `/metrics` | No | Prometheus metrics |
+
+---
+
+## API Usage
+
+The examples below use the local Docker API:
+
+```text
+http://127.0.0.1:8000
+```
+
+Replace `your-secret-api-key` with the API key configured in your environment.
+
+### 1. Root
+
+```bash
+curl http://127.0.0.1:8000/
+```
+
+Example response:
+
+```json
+{
+  "message": "ml api is alive"
+}
+```
+
+---
+
+### 2. Health Check
+
+```bash
+curl http://127.0.0.1:8000/api/v1/health
+```
+
+Example response:
+
+```json
+{
+  "status": "ok",
+  "model_loaded": true
+}
+```
+
+---
+
+### 3. V1 Single Prediction
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/predict \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-secret-api-key" \
+  -d '{
+    "sepal_length": 5.1,
+    "sepal_width": 3.5,
+    "petal_length": 1.4,
+    "petal_width": 0.2
+  }'
+```
 
 Example response:
 
@@ -99,9 +391,74 @@ Example response:
 }
 ```
 
-### V2 Output
+---
 
-The V2 API returns the predicted species along with the full probability distribution for all Iris classes, model version, and request ID.
+### 4. Batch Prediction
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/predict-batch \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-secret-api-key" \
+  -d '{
+    "items": [
+      {
+        "sepal_length": 5.1,
+        "sepal_width": 3.5,
+        "petal_length": 1.4,
+        "petal_width": 0.2
+      },
+      {
+        "sepal_length": 6.0,
+        "sepal_width": 3.0,
+        "petal_length": 4.8,
+        "petal_width": 1.8
+      }
+    ]
+  }'
+```
+
+The endpoint processes multiple samples in a single request.
+
+---
+
+### 5. Model Information
+
+```bash
+curl http://127.0.0.1:8000/api/v1/model-info \
+  -H "X-API-Key: your-secret-api-key"
+```
+
+Example response:
+
+```json
+{
+  "model_type": "RandomForestClassifier",
+  "model_version": "1.0",
+  "training_date": "2026-08-26",
+  "features": [
+    "sepal_length",
+    "sepal_width",
+    "petal_length",
+    "petal_width"
+  ]
+}
+```
+
+---
+
+### 6. V2 Prediction
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v2/predict \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-secret-api-key" \
+  -d '{
+    "sepal_length": 5.1,
+    "sepal_width": 3.5,
+    "petal_length": 1.4,
+    "petal_width": 0.2
+  }'
+```
 
 Example response:
 
@@ -118,267 +475,85 @@ Example response:
 }
 ```
 
-## API Security
+---
 
-The prediction and model information endpoints are protected using API key authentication.
-
-The API key must be sent using the following HTTP header:
-
-X-API-Key
-
-Example:
-
-X-API-Key: your-secret-api-key
-
-Protected endpoints:
-
-- POST /api/v1/predict
-- POST /api/v1/predict-batch
-- GET /api/v1/model-info
-- POST /api/v2/predict
-
-Requests with a missing or invalid API key return:
-
-```json
-{
-  "detail": "Invalid or missing API key"
-}
-
-
-## Request Flow
-
-The planned API request flow is:
-
-```text
-Client
-  ↓
-Request Middleware (Request ID + Logging)
-  ↓
-POST /api/v1/predict
-or
-POST /api/v2/predict
-  ↓
-Input Validation
-  ↓
-Preprocessing Pipeline
-  ↓
-Machine Learning Model
-  ↓
-Prediction
-  ↓
-JSON Response
-```
-
-### Flow Explanation
-
-1. The client sends Iris flower measurements to the `/api/v1/predict` or `/api/v2/predict` endpoint.
-2. The API validates the input data.
-3. The same preprocessing used during model training is applied.
-4. The processed data is passed to the trained machine learning model.
-5. The model predicts the Iris flower species.
-6. The API returns the prediction as a JSON response.
-
-## Model Saving
-
-The trained model is saved at:
-
-```text
-ml/saved_model/model.joblib
-```
-
-The saved model can be loaded later without retraining.
-
-A separate prediction script is used to verify that the saved model can be successfully loaded and used for prediction.
-
-## Project Structure
-
-```text
-iris-ml-api/
-│
-├── app/
-│   ├── main.py
-│   ├── config.py
-│   ├── logging_config.py
-│   ├── security.py
-│   ├── models/
-│   │   └── schemas.py
-│   └── routers/
-│       ├── v1.py
-│       └── v2.py
-│
-├── logs/
-│   └── app.log
-│
-│
-├── ml/
-│   ├── train.py
-│   ├── predict.py
-│   └── saved_model/
-│       └── model.joblib
-│
-├── tests/
-│   ├── conftest.py
-│   ├── test_health.py
-│   ├── test_predict.py
-│   ├── test_batch.py
-│   ├── test_v2.py
-│   └── test_security.py
-│
-├── .dockerignore
-├── .env
-├── .env.example
-├── .gitignore
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
-```
-
-## Technologies
-
-- Python
-- scikit-learn
-- FastAPI
-- Pydantic
-- Uvicorn
-- Pandas
-- Joblib
-- Git
-- GitHub
-- Docker
-- Docker Compose
-
-## Current Progress
-
-- [x] Project problem and dataset selected
-- [x] API input/output contract planned
-- [x] Project architecture planned
-- [x] GitHub repository created
-- [x] Python virtual environment configured
-- [x] Project folder structure created
-- [x] Dependencies installed
-- [x] `requirements.txt` created
-- [x] `.gitignore` configured
-- [x] RandomForestClassifier trained
-- [x] Model evaluated
-- [x] Model saved as `model.joblib`
-- [x] Saved model loaded and tested with a prediction
-- [x] Basic FastAPI application created
-- [x] `GET /` endpoint created
-- [x] `POST /api/v1/predict` endpoint created
-- [x] FastAPI Swagger documentation tested
-- [x] Pydantic input validation added
-- [x] Real ML model integrated with FastAPI
-- [x] Model loaded using FastAPI lifespan
-- [x] Health check endpoint added
-- [x] Error handling implemented
-- [x] Custom exception handling added
-- [x] Structured logging configured
-- [x] Request middleware added
-- [x] Unique request IDs implemented
-- [x] Prediction success and failure logging added
-- [x] Rotating file logging implemented
-- [x] API versioning implemented with `/api/v1` and `/api/v2`
-- [x] Batch prediction endpoint added
-- [x] Model information endpoint added
-- [x] Environment-based configuration added
-- [x] `.env` and `.env.example` added
-- [x] Automated API tests added with pytest
-- [x] Input validation and edge-case tests added
-- [x] API v2 endpoint added
-- [x] V1 and V2 response shapes tested
-- [x] API key authentication implemented
-- [x] Protected prediction endpoints with X-API-Key
-- [x] Missing API key validation implemented
-- [x] Invalid API key validation implemented
-- [x] Unexpected request fields rejected
-- [x] Security tests added with pytest
-- [x] 10 automated tests passing
-
-
-## Docker
-
-The API is containerized using Docker, allowing the complete application,
-including its dependencies and trained machine learning model, to run inside
-a portable container.
-
-### Dockerfile
-
-The Dockerfile:
-
-- Uses Python 3.12 Slim as the base image
-- Sets `/app` as the working directory
-- Installs all project dependencies from `requirements.txt`
-- Copies the application code and ML model into the container
-- Exposes port `8000`
-- Runs the FastAPI application using Uvicorn
-
-The API uses `0.0.0.0` inside Docker so that the application is accessible
-from outside the container through the mapped host port.
-
-### Why `0.0.0.0` is used inside Docker
-
-Inside a Docker container, `127.0.0.1` only makes the application accessible
-from within the container itself.
-
-Using `0.0.0.0` makes Uvicorn listen on all available network interfaces,
-allowing Docker port mapping to expose the API to the host machine.
-
-### Build the Docker Image
+### 7. Prometheus Metrics
 
 ```bash
-docker build -t ml-api:v1 .
+curl http://127.0.0.1:8000/metrics
 ```
 
-### Run the Docker Container
+The endpoint exposes Prometheus-compatible metrics including:
 
-```bash
-docker run -p 8000:8000 ml-api:v1
+- HTTP request metrics
+- HTTP request latency metrics
+- `iris_predictions_total`
+
+The custom prediction metric tracks predictions by predicted class.
+
+---
+
+## Monitoring and Metrics
+
+Prometheus instrumentation is implemented using:
+
+```text
+prometheus-fastapi-instrumentator
 ```
 
-### Run with Docker Compose
+The metrics endpoint is:
 
-```bash
-docker compose up --build
+```text
+GET /metrics
 ```
 
-## Future Development
+A custom metric is also implemented:
 
-The project will be developed further by adding:
+```text
+iris_predictions_total
+```
 
-- API monitoring and metrics
-- Deployment
-- Further API version improvements
+The metric uses the predicted class as a label:
 
+```text
+iris_predictions_total{predicted_class="setosa"}
+```
 
-## Task 14 — API Versioning and Self-Assessment
+This provides basic monitoring of model prediction activity.
 
-### API Versioning
+---
 
-The API now supports multiple versions:
+## Logging
 
-- `POST /api/v1/predict` — returns prediction, confidence, model version, and request ID.
-- `POST /api/v2/predict` — returns prediction, full probability distribution, model version, and request ID.
+Structured application logging is implemented using Python's logging module.
 
-Version 2 introduces a deliberately different response shape while keeping version 1 unchanged.
+The application provides:
 
-### Self-Assessment
+- Console logging
+- Rotating file logging
+- Request IDs
+- HTTP method logging
+- Request path logging
+- Request duration logging
+- Prediction success logging
+- Prediction failure logging
+- Batch size logging
 
-#### 1. If a client was depending on v1's exact response shape, would anything break?
+Application logs are stored in:
 
-No. The v1 response shape remains unchanged. The breaking change was introduced through a separate `/api/v2/predict` endpoint. Automated tests verify that both versions work with the same input while returning different response shapes.
+```text
+logs/app.log
+```
 
-#### 2. Where did you have to duplicate code between v1 and v2, and could any of it be shared instead?
+Log files use rotation with a maximum size of 5 MB and up to 3 backup files.
 
-Some feature preparation, model prediction, and class mapping logic is duplicated between v1 and v2. In the future, the common prediction logic could be moved into a shared service or helper function, while keeping separate response schemas for each API version.
+---
 
-#### 3. How would you tell your team it's time to deprecate v1 someday?
+## Configuration
 
-I would consider deprecating v1 when most clients have migrated to v2, v1 traffic has consistently become very low, and existing v1 users have been informed and given a clear migration path.
+Application configuration is managed using `pydantic-settings`.
 
-## Environment Configuration
-
-Sensitive configuration is stored using environment variables.
+Configuration values are stored in environment variables.
 
 Example `.env` configuration:
 
@@ -392,8 +567,487 @@ API_KEY=your-secret-api-key
 ALLOWED_ORIGINS=http://localhost:3000
 ```
 
+The `.env` file should not be committed to Git.
+
+Use `.env.example` as the template for required configuration.
+
+---
+
+## CORS
+
+CORS is configured using FastAPI's `CORSMiddleware`.
+
+Allowed origins are configured through:
+
+```env
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+This avoids hardcoding deployment-specific origins directly into the application.
+
+---
+
+## Technologies
+
+- Python
+- scikit-learn
+- FastAPI
+- Pydantic
+- Pydantic Settings
+- Uvicorn
+- Pandas
+- NumPy
+- Joblib
+- Prometheus
+- Git
+- GitHub
+- GitHub Actions
+- Docker
+- Docker Compose
+- Pytest
+
+---
+
+## Docker
+
+The API is containerized using Docker.
+
+The container includes:
+
+- Python runtime
+- Application code
+- API dependencies
+- Trained machine learning model
+
+### Dockerfile
+
+The Dockerfile:
+
+- Uses Python 3.12 Slim as the base image
+- Sets `/app` as the working directory
+- Installs dependencies from `requirements.txt`
+- Copies the application and ML model
+- Exposes port `8000`
+- Runs FastAPI using Uvicorn
+
+The application listens on:
+
+```text
+0.0.0.0:8000
+```
+
+### Why `0.0.0.0` is used
+
+Inside a Docker container, `127.0.0.1` only makes the application accessible from inside the container.
+
+Using `0.0.0.0` allows Uvicorn to listen on all network interfaces so Docker port mapping can expose the API to the host machine.
+
+---
+
+## Build the Docker Image
+
+```bash
+docker build -t ml-api:v1 .
+```
+
+---
+
+## Run the Docker Container
+
+```bash
+docker run -p 8000:8000 ml-api:v1
+```
+
+---
+
+## Run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+To run the application in the background:
+
+```bash
+docker compose up --build -d
+```
+
+To stop the application:
+
+```bash
+docker compose down
+```
+
+---
+
+## Testing
+
+The project includes automated testing, integration testing, Docker testing, and concurrent load testing.
+
+### Automated Tests
+
+The final automated test suite contains:
+
+```text
+11 passed
+```
+
+Tests cover:
+
+- Health endpoint
+- Single prediction
+- Input validation
+- Missing fields
+- Batch prediction
+- Model information
+- API security
+- Missing API key
+- Invalid API key
+- Unexpected request fields
+- Prometheus metrics
+- V1/V2 response differences
+
+Run tests locally:
+
+```bash
+python -m pytest -v
+```
+
+Run tests inside Docker:
+
+```bash
+docker exec -it iris-ml-api pytest
+```
+
+Final Docker test result:
+
+```text
+11 passed
+```
+
+---
+
+## Integration Testing
+
+Integration testing was performed against the running Docker container using HTTP requests.
+
+The following endpoints were verified:
+
+```text
+GET  /api/v1/health
+POST /api/v1/predict
+POST /api/v1/predict-batch
+GET  /metrics
+```
+
+All tested endpoints returned successful responses.
+
+Detailed integration testing results are documented in:
+
+```text
+TESTING.md
+```
+
+---
+
+## Load Testing
+
+A concurrent load test was performed against:
+
+```text
+POST /api/v1/predict
+```
+
+Test configuration:
+
+```text
+Total requests: 100
+Concurrent requests: 100
+Authentication: API key
+Target: Running Docker container
+```
+
+The API successfully processed the load test without recorded HTTP 5xx failures.
+
+---
+
+## Bug Fix During Testing
+
+During Docker testing, pytest initially produced:
+
+```text
+ModuleNotFoundError: No module named 'app'
+```
+
+The issue occurred because the Docker environment did not explicitly define the application directory as the Python module search path.
+
+The Dockerfile was updated with:
+
+```dockerfile
+ENV PYTHONPATH=/app
+```
+
+After rebuilding the Docker image and restarting the container, the complete test suite passed:
+
+```text
+11 passed
+```
+
+The issue and verification steps are documented in:
+
+```text
+TESTING.md
+```
+
+---
+
+## Current Progress
+
+### Phase 1
+
+- [x] Project problem and dataset selected
+- [x] API input/output contract planned
+- [x] Project architecture planned
+- [x] GitHub repository created
+- [x] Python virtual environment configured
+- [x] Project folder structure created
+- [x] Dependencies installed
+- [x] `requirements.txt` created
+- [x] `.gitignore` configured
+- [x] RandomForestClassifier trained
+- [x] Model evaluated
+- [x] Model saved as `model.joblib`
+- [x] Saved model loaded and tested
+- [x] Basic FastAPI application created
+
+### Phase 2
+
+- [x] Pydantic input validation
+- [x] Real ML model integrated
+- [x] Model loaded using FastAPI lifespan
+- [x] Health check endpoint
+- [x] Error handling
+- [x] Custom exception handling
+- [x] Structured logging
+- [x] Request middleware
+- [x] Unique request IDs
+- [x] Prediction logging
+- [x] Rotating file logging
+
+### Phase 3
+
+- [x] API versioning with `/api/v1` and `/api/v2`
+- [x] Batch prediction endpoint
+- [x] Model information endpoint
+- [x] Environment-based configuration
+- [x] `.env.example`
+- [x] Automated pytest suite
+- [x] V1/V2 response shape testing
+
+### Phase 4
+
+- [x] Docker containerization
+- [x] Docker Compose
+- [x] API key authentication
+- [x] CORS configuration
+- [x] Input edge-case handling
+- [x] Security tests
+
+### Phase 5
+
+- [x] Prometheus metrics
+- [x] Integration testing
+- [x] Concurrent load testing
+- [x] Docker testing
+- [x] Docker pytest issue identified and fixed
+- [x] 11 automated tests passing
+- [x] GitHub Actions CI implemented
+- [x] GitHub Actions workflow passing
+- [ ] Public cloud deployment
+- [ ] Final deployed API verification
+
+---
+
+## Independent Extension
+
+### GitHub Actions CI
+
+A GitHub Actions CI workflow was implemented as an independent extension.
+
+The workflow automatically runs the project's pytest test suite when:
+
+- Code is pushed to the `main` branch
+- A pull request targets the `main` branch
+
+### CI Pipeline
+
+The workflow performs the following steps:
+
+1. Checks out the repository.
+2. Sets up Python 3.12.
+3. Installs project dependencies.
+4. Runs the complete pytest test suite.
+
+The final GitHub Actions workflow completed successfully with:
+
+```text
+11 passed
+```
+
+This provides automated regression testing and helps ensure that future code changes do not break the existing API functionality.
+
+---
+
+## Deployment
+
+The Dockerized API is intended to be deployed to a cloud hosting platform that supports Docker containers.
+
+### Public API URL
+
+```text
+TO_BE_UPDATED_AFTER_DEPLOYMENT
+```
+
+### Swagger Documentation
+
+```text
+TO_BE_UPDATED_AFTER_DEPLOYMENT/docs
+```
+
+### Health Check
+
+```text
+TO_BE_UPDATED_AFTER_DEPLOYMENT/api/v1/health
+```
+
+### Prometheus Metrics
+
+```text
+TO_BE_UPDATED_AFTER_DEPLOYMENT/metrics
+```
+
+The actual public URLs will be added after deployment and final verification.
+
+---
+
 ## API Documentation
 
-FastAPI provides automatic interactive API documentation at:
+FastAPI provides automatic interactive API documentation through Swagger UI.
 
-[Open API Documentation](http://127.0.0.1:8000/docs)
+### Local Documentation
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+to test the API interactively.
+
+FastAPI also provides the OpenAPI specification at:
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
+
+---
+
+## API Versioning
+
+The API supports multiple versions.
+
+### V1
+
+```text
+POST /api/v1/predict
+```
+
+Returns:
+
+- Prediction
+- Confidence
+- Model version
+- Request ID
+
+### V2
+
+```text
+POST /api/v2/predict
+```
+
+Returns:
+
+- Prediction
+- Full probability distribution
+- Model version
+- Request ID
+
+Version 2 introduces a deliberately different response shape while keeping version 1 unchanged.
+
+---
+
+## Task 14 — Self-Assessment
+
+### 1. If a client was depending on V1's exact response shape, would anything break?
+
+No.
+
+The V1 response shape remains unchanged.
+
+The breaking change was introduced through a separate `/api/v2/predict` endpoint.
+
+Automated tests verify that both versions work with the same input while returning different response shapes.
+
+### 2. Where did you have to duplicate code between V1 and V2, and could any of it be shared instead?
+
+Some feature preparation, model prediction, and class mapping logic is duplicated between V1 and V2.
+
+In the future, common prediction logic could be moved into a shared service or helper function while keeping separate response schemas for each API version.
+
+### 3. How would you tell your team it is time to deprecate V1 someday?
+
+I would consider deprecating V1 when most clients have migrated to V2, V1 traffic has consistently become very low, and existing V1 users have been informed and provided with a clear migration path.
+
+---
+
+## What I Learned
+
+Through this project, I learned how to:
+
+- Train and save a machine learning classification model.
+- Serve a trained ML model using FastAPI.
+- Validate API inputs using Pydantic.
+- Load a model once using FastAPI lifespan.
+- Design versioned APIs using `/api/v1` and `/api/v2`.
+- Implement API key authentication.
+- Configure applications using environment variables.
+- Implement structured logging.
+- Generate unique request IDs.
+- Add Prometheus monitoring metrics.
+- Create batch prediction endpoints.
+- Containerize an ML API using Docker.
+- Use Docker Compose.
+- Write automated tests using pytest.
+- Perform integration testing.
+- Perform concurrent load testing.
+- Identify and fix Docker environment issues.
+- Automate testing using GitHub Actions.
+- Document and prepare an ML API for deployment.
+
+---
+
+## Future Development
+
+Possible future improvements include:
+
+- Grafana dashboard for advanced monitoring
+- Model retraining and automated model versioning
+- Response caching for frequently repeated predictions
+- Cloud deployment with production monitoring
+- Further API performance optimization
+- Centralized log management
+- CI/CD deployment automation
