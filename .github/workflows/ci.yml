@@ -12,6 +12,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      PYTHONPATH: .
+      API_KEY: test-api-key
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,7 +31,5 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        env:
-          API_KEY: test-api-key
         run: |
           pytest -v
