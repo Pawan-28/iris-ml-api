@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request, Security
 from app.security import verify_api_key
+from app.metrics import prediction_counter
 
 from app.models.schemas import (
     PredictionInput,
@@ -20,10 +21,12 @@ router = APIRouter(
 
 
 @router.get("/health")
-def health():
+def health(request: Request):
+    model_loaded = hasattr(request.app.state, "model")
+
     return {
         "status": "ok",
-        "model_loaded": True
+        "model_loaded": model_loaded
     }
 
 
@@ -49,6 +52,11 @@ def predict(data: PredictionInput, request: Request):
         class_names = ["setosa", "versicolor", "virginica"]
 
         predicted_class = class_names[prediction[0]]
+
+        prediction_counter.labels(
+            predicted_class=predicted_class
+        ).inc()
+
         confidence = round(float(max(probabilities[0])) * 100, 2)
 
         request_id = request.state.request_id
@@ -119,11 +127,14 @@ def predict_batch(data: PredictionBatchInput, request: Request):
 
             predicted_class = class_names[prediction]
 
+            prediction_counter.labels(
+                predicted_class=predicted_class
+            ).inc()
+
             confidence = round(
                 float(max(probability)) * 100,
                 2
             )
-
             results.append(
                 PredictionOutput(
                     prediction=predicted_class,

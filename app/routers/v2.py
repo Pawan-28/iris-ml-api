@@ -4,7 +4,8 @@ from app.models.schemas import PredictionInput, PredictionV2Output
 from app.config import settings
 from app.logging_config import logger
 from app.security import verify_api_key
-from app.security import verify_api_key
+from app.metrics import prediction_counter
+
 
 
 router = APIRouter(
@@ -35,6 +36,10 @@ def predict_v2(
         class_names = ["setosa", "versicolor", "virginica"]
 
         predicted_class = class_names[prediction[0]]
+
+        prediction_counter.labels(
+            predicted_class=predicted_class
+        ).inc()
 
         probability_distribution = {
             class_name: round(float(probability), 4)
