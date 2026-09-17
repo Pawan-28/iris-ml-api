@@ -1,3 +1,5 @@
+from app.config import settings
+
 def test_missing_api_key(client):
     response = client.post(
         "/api/v1/predict",
@@ -33,7 +35,7 @@ def test_unexpected_extra_field(client):
     response = client.post(
         "/api/v1/predict",
         headers={
-            "X-API-Key": "pawan3399"
+            "X-API-Key": settings.API_KEY
         },
         json={
             "sepal_length": 5.1,
